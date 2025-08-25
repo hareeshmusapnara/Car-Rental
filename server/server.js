@@ -16,7 +16,17 @@ import "./models/Booking.js";
 const app = express()
 
 // Connect Database
-await connectDB()
+const initializeApp = async () => {
+  try {
+    await connectDB()
+    console.log("Database connected successfully")
+  } catch (error) {
+    console.error("Database connection failed:", error)
+  }
+}
+
+// Initialize database connection
+initializeApp()
 
 //Middleware
 app.use(cors());
@@ -28,4 +38,11 @@ app.use('/api/owner', ownerRouter)
 app.use('/api/bookings', bookingRouter)
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
+
+// Only start server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
+}
+
+// Export for Vercel
+export default app;
