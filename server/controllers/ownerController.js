@@ -9,15 +9,10 @@ import fs from "fs";
 export const changeRoleToOwner = async (req, res) => {
   try {
          const {_id} = req.user;
-         console.log("Changing role to owner for user:", _id.toString());
-         const updatedUser = await User.findByIdAndUpdate(_id, {role: "owner"}, {new: true});
-         console.log("User role updated:", {
-             userId: updatedUser._id.toString(),
-             newRole: updatedUser.role
-         });
+         await User.findByIdAndUpdate(_id, {role: "owner"});
          res.json({ success: true, message: "Now you can list your cars"});
   } catch (error) {
-      console.log("Error changing role to owner:", error.message);
+      console.log(error.message);
       res.json({ success: false, message: error.message});
   }
 }
@@ -131,44 +126,11 @@ export const toggleCarAvailability = async (req, res) => {
     export const getDashboardData = async (req, res) => {
     try {
         const {_id , role} = req.user;
-        console.log("Dashboard - User details:", {
-            userId: _id.toString(),
-            userRole: role
-        });
-
         if(role !== "owner"){
-            console.log("Dashboard - User is not an owner, role:", role);
-            return res.json({success: false, message: "Unauthorized - User must be an owner"});
+            return res.json({success: false, message: "Unauthorized"});
         }
-        // Check all cars in database first
-        const allCars = await Car.find({});
-        console.log("Dashboard - Total cars in database:", allCars.length);
-        console.log("Dashboard - All cars:", allCars.map(c => ({
-            id: c._id,
-            brand: c.brand,
-            model: c.model,
-            owner: c.owner.toString()
-        })));
-
         const cars = await Car.find({owner:_id});
-        console.log("Dashboard - Owner ID:", _id.toString());
-        console.log("Dashboard - Found cars for this owner:", cars.length);
-        console.log("Dashboard - Owner's cars details:", cars.map(c => ({
-            id: c._id,
-            brand: c.brand,
-            model: c.model,
-            owner: c.owner.toString()
-        })));
-
-        const bookings = await Booking.find({owner:_id}).populate("car").sort({createdAt: -1})
-        console.log("Dashboard - Found bookings:", bookings.length);
-        console.log("Dashboard - Bookings details:", bookings.map(b => ({
-            id: b._id,
-            carBrand: b.car?.brand,
-            carModel: b.car?.model,
-            status: b.status,
-            price: b.price
-        })));;
+        const bookings = await Booking.find({owner:_id}).populate("car").sort({createdAt: -1});
 
         const pendingBookings = await Booking.find({owner:_id, status: "pending"})
         const completedBookings = await Booking.find({owner:_id, status: "confirmed"})

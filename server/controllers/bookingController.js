@@ -49,35 +49,13 @@ export const createBooking = async (req, res) => {
     }
 
     const carData = await Car.findById(car);
-    if (!carData) {
-        return res.json({success: false, message: "Car not found"});
-    }
-
-    console.log("Car data found:", {
-        carId: car,
-        carBrand: carData.brand,
-        carModel: carData.model,
-        carOwner: carData.owner,
-        bookingUser: _id
-    });
-
     // calculate price based on pickup and return date
     const picked = new Date(pickupDate);
     const returned = new Date(returnDate);
     const noOfDays = Math.ceil(Math.abs(returned - picked) / (1000 * 60 * 60 * 24));
     const price = noOfDays * carData.pricePerDay;
 
-    console.log("Creating booking with details:", {
-        car,
-        user: _id,
-        owner: carData.owner,
-        pickupDate,
-        returnDate,
-        price,
-        noOfDays
-    });
-
-    const newBooking = await Booking.create({
+    await Booking.create({
         car,
         user: _id,
         owner: carData.owner,
@@ -85,8 +63,6 @@ export const createBooking = async (req, res) => {
         returnDate,
         price
     })
-
-    console.log("Booking created successfully:", newBooking);
     res.json({success: true, message: "Booking Created"});
   
  } catch (error) {
@@ -101,16 +77,7 @@ export const createBooking = async (req, res) => {
 export const getUserBookings = async (req, res) => {
   try {
       const{_id} = req.user;
-      console.log("MyBookings - User ID:", _id);
       const bookings = await Booking.find({user:_id}).populate("car").sort({createdAt: -1})
-      console.log("MyBookings - Found bookings:", bookings.length);
-      console.log("MyBookings - Bookings details:", bookings.map(b => ({
-          id: b._id,
-          carBrand: b.car?.brand,
-          carModel: b.car?.model,
-          status: b.status,
-          price: b.price
-      })));
       res.json({success: true, bookings});
   } catch (error) {
     console.log(error.message);
