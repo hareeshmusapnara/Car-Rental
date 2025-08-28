@@ -1,6 +1,5 @@
 import Booking from "../models/Booking.js";
 import Car from "../models/Car.js";
-import User from "../models/User.js";
 
 // Function to check availability of car for a given Date 
 export const checkAvailability = async (car, pickupDate, returnDate) => {
